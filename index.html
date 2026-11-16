@@ -732,7 +732,8 @@ function renderWelcome(msg){
       · 기록은 <b>내 구글 드라이브의 '제자수첩' 폴더</b>에만 저장돼요.<br>
       · 이 앱은 자기가 만든 파일만 열 수 있고, 드라이브의 다른 파일은 볼 수 없어요.<br>
       · 앱을 만든 사람도 내 기록을 볼 수 없어요.
-    </div>`);
+    </div>
+    <p class="hint" style="margin-top:14px"><a href="privacy.html" target="_blank" rel="noopener">개인정보처리방침</a></p>`);
   $('#gIn').onclick = async () => {
     $('#gErr').textContent = '';
     try { await requestToken(lsGet('jeja_hint') ? '' : 'select_account'); }

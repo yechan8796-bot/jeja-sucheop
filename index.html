@@ -1,0 +1,1423 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="referrer" content="no-referrer">
+<title>제자수첩</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gowun+Batang:wght@400;700&display=swap">
+<style>
+:root{
+  --paper:#f5f0e6; --card:#fffdf8; --ink:#2a2723; --ink2:#6b655c; --line:#e3dbcc;
+  --accent:#9c4a32; --accent-soft:#f3e3da; --green:#4f6b4a; --danger:#b3261e;
+  --radius:12px; --shadow:0 1px 2px rgba(60,40,20,.06),0 4px 14px rgba(60,40,20,.06);
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--paper);color:var(--ink);font-family:Pretendard,-apple-system,"Apple SD Gothic Neo","Malgun Gothic",sans-serif;font-size:15px;line-height:1.5;-webkit-font-smoothing:antialiased}
+button{font:inherit;cursor:pointer}
+input,select,textarea{font:inherit;color:inherit}
+.serif{font-family:"Gowun Batang",serif}
+.hidden{display:none!important}
+
+/* 공통 버튼 */
+.btn{border:1px solid var(--line);background:var(--card);border-radius:9px;padding:8px 14px;color:var(--ink);white-space:nowrap}
+.btn:hover{border-color:#cdbfa8}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.primary:hover{background:#86402b}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--ink2)}
+.btn.ghost:hover{background:rgba(0,0,0,.04)}
+.btn.danger{color:var(--danger);border-color:#ecc9c6;background:#fff}
+.btn.sm{padding:5px 10px;font-size:13.5px}
+a.btn{text-decoration:none;display:inline-block}
+a{color:var(--accent)}
+.btn:disabled{opacity:.5;cursor:default}
+.icon-btn{width:38px;height:38px;border-radius:10px;border:0;background:transparent;display:grid;place-items:center;color:var(--ink2)}
+.icon-btn:hover{background:rgba(0,0,0,.05);color:var(--ink)}
+.icon-btn svg{width:20px;height:20px}
+
+.field{display:block;margin-bottom:14px}
+.field>span{display:block;font-size:13px;color:var(--ink2);margin-bottom:5px}
+.input{width:100%;border:1px solid var(--line);background:#fff;border-radius:9px;padding:10px 12px;outline:none}
+.input:focus{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-soft)}
+textarea.input{resize:vertical;min-height:70px}
+.hint{font-size:13px;color:var(--ink2)}
+.err{color:var(--danger);font-size:13.5px;min-height:20px;margin:6px 0 0}
+
+/* 잠금 화면 */
+.lock{min-height:100vh;display:grid;place-items:center;padding:24px}
+.lock-card{width:100%;max-width:360px;text-align:center}
+.lock-mark{width:64px;height:76px;margin:0 auto 18px;border-radius:6px 10px 10px 6px;background:var(--accent);position:relative;box-shadow:var(--shadow)}
+.lock-mark:before{content:"";position:absolute;left:9px;top:0;bottom:0;width:2px;background:rgba(255,255,255,.35)}
+.lock-mark:after{content:"";position:absolute;right:-5px;top:18px;width:10px;height:22px;border-radius:3px;background:#c98f5e}
+.lock h1{font-family:"Gowun Batang",serif;font-size:30px;margin:0 0 6px;letter-spacing:.02em}
+.lock p.sub{color:var(--ink2);margin:0 0 26px;font-size:14px}
+.lock .input{text-align:center;font-size:17px;letter-spacing:.1em;margin-bottom:10px}
+.lock .btn{width:100%;padding:12px}
+
+/* 상단바 */
+.top{position:sticky;top:0;z-index:20;background:rgba(245,240,230,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.top-in{max-width:1100px;margin:0 auto;display:flex;align-items:center;gap:6px;padding:10px 16px}
+.top h1{font-family:"Gowun Batang",serif;font-size:21px;margin:0;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wrap{max-width:1100px;margin:0 auto;padding:16px 16px 100px}
+
+/* 연도 띠 */
+.years{display:flex;gap:8px;overflow-x:auto;padding:4px 0 14px;scrollbar-width:none}
+.years::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:var(--card);border-radius:999px;padding:7px 15px;color:var(--ink2)}
+.chip b{color:var(--ink);font-weight:600}
+.chip small{margin-left:5px;color:var(--ink2)}
+.chip.on{background:var(--ink);border-color:var(--ink);color:#fff}
+.chip.on b,.chip.on small{color:#fff}
+
+.yr-head{display:flex;align-items:baseline;gap:10px;margin:18px 2px 10px}
+.yr-head h2{font-family:"Gowun Batang",serif;font-size:22px;margin:0}
+.yr-head span{color:var(--ink2);font-size:13.5px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.ccard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px;text-align:left;box-shadow:var(--shadow);position:relative;overflow:hidden;transition:transform .12s}
+.ccard:hover{transform:translateY(-2px)}
+.ccard:before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--accent)}
+.ccard .nm{font-family:"Gowun Batang",serif;font-size:19px;font-weight:700;margin-bottom:4px}
+.ccard .mt{color:var(--ink2);font-size:13.5px}
+.ccard .age{margin-top:10px;font-size:12.5px;color:var(--green);background:#eef2ea;display:inline-block;padding:2px 8px;border-radius:6px}
+
+.fab{position:fixed;right:20px;bottom:22px;z-index:30;border:0;background:var(--accent);color:#fff;border-radius:999px;padding:14px 20px;box-shadow:0 6px 18px rgba(156,74,50,.35);font-weight:600}
+.empty{text-align:center;color:var(--ink2);padding:70px 20px}
+.empty .serif{font-size:20px;color:var(--ink);margin-bottom:6px}
+
+/* 학급 화면 */
+.cls-head{margin:4px 2px 14px}
+.cls-head .meta{color:var(--ink2);font-size:14px}
+.cls-head .age{color:var(--green);font-size:13.5px}
+.tabs{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tab{border:0;background:none;padding:10px 14px;color:var(--ink2);border-bottom:2px solid transparent;margin-bottom:-1px}
+.tab.on{color:var(--ink);border-bottom-color:var(--accent);font-weight:600}
+.toolbar{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;align-items:center}
+.toolbar .sp{flex:1}
+
+.tbl-wrap{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);overflow:auto;box-shadow:var(--shadow);max-height:calc(100vh - 250px)}
+table.roster{border-collapse:separate;border-spacing:0;width:100%;font-size:14px}
+.roster th,.roster td{border-bottom:1px solid var(--line);padding:0;vertical-align:top;background:var(--card)}
+.roster th{position:sticky;top:0;z-index:3;background:#f8f3ea;font-weight:600;font-size:13px;color:var(--ink2);text-align:left;padding:9px 8px;white-space:nowrap}
+.roster tr:last-child td{border-bottom:0}
+.roster .c-no{width:52px;min-width:52px;max-width:52px;position:sticky;left:0;z-index:2}
+.roster .c-ph{width:46px;min-width:46px;max-width:46px;position:sticky;left:52px;z-index:2}
+.roster .c-nm{width:104px;min-width:104px;max-width:104px;position:sticky;left:98px;z-index:2;border-right:1px solid var(--line)}
+.roster th.c-no,.roster th.c-ph,.roster th.c-nm{z-index:4}
+.roster .c-note{min-width:150px}
+.roster .c-fold{width:44px;text-align:center}
+.roster .c-up{min-width:240px;max-width:340px}
+.roster .c-go{width:40px;min-width:40px}
+.cell{display:block;width:100%;border:0;background:transparent;padding:9px 8px;outline:none;resize:none;min-height:38px;line-height:1.45}
+textarea.cell{height:38px;overflow:hidden}
+textarea.cell:focus{height:96px;overflow:auto}
+.cell:focus{background:#fff8ec;box-shadow:inset 0 0 0 2px #e7c9a6}
+.cell.no{text-align:center}
+.thumb{width:30px;height:38px;border-radius:5px;object-fit:cover;display:block;margin:4px 8px;background:#eee6d8}
+.thumb.empty{display:grid;place-items:center;color:#b9ab93;font-size:11px}
+.fold-btn{border:0;background:#efe6d6;color:var(--ink2);border-radius:6px;font-size:12px;padding:2px 7px;margin-left:6px}
+.note-dot{display:inline-block;margin:11px auto;font-size:12px;color:var(--ink2)}
+.up-btn{display:block;width:100%;text-align:left;border:0;background:transparent;padding:9px 8px;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-height:38px}
+.up-btn:hover{background:#faf5ec}
+.up-btn .d{color:var(--accent);font-size:12px;margin-right:6px;font-variant-numeric:tabular-nums}
+.up-btn .t{display:inline}
+.up-btn .none{color:#b9ab93}
+.go{border:0;background:transparent;color:var(--ink2);padding:9px;width:100%}
+.go:hover{color:var(--accent)}
+
+/* 사진 명부 */
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:12px}
+.pcard{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:8px;text-align:center;box-shadow:var(--shadow)}
+.pcard .ph{width:100%;aspect-ratio:4/5;border-radius:7px;object-fit:cover;background:#eee6d8;display:grid;place-items:center;color:#b9ab93;font-size:12px;cursor:pointer}
+.pcard .lb{margin-top:6px;font-size:13.5px}
+.pcard .lb b{color:var(--accent);margin-right:4px;font-variant-numeric:tabular-nums}
+.drop{border:2px dashed #d6c8b0;border-radius:var(--radius);padding:16px;text-align:center;color:var(--ink2);margin-bottom:14px;background:rgba(255,255,255,.4)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+
+/* 모달 */
+.modal-bg{position:fixed;inset:0;background:rgba(30,24,16,.4);z-index:50;display:flex;align-items:flex-end;justify-content:center}
+@media(min-width:700px){.modal-bg{align-items:center}}
+.modal{background:var(--paper);width:100%;max-width:560px;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;box-shadow:0 10px 40px rgba(0,0,0,.2)}
+@media(min-width:700px){.modal{border-radius:16px}}
+.modal.wide{max-width:720px}
+.m-head{position:sticky;top:0;background:var(--paper);display:flex;align-items:center;padding:14px 16px 10px;border-bottom:1px solid var(--line);z-index:2}
+.m-head h3{margin:0;flex:1;font-family:"Gowun Batang",serif;font-size:19px}
+.m-body{padding:16px}
+.m-foot{display:flex;gap:8px;justify-content:flex-end;padding:0 16px 16px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+
+/* 학생 상세 */
+.st-top{display:flex;gap:14px;align-items:center;margin-bottom:16px}
+.st-ph{width:84px;height:105px;border-radius:9px;object-fit:cover;background:#eee6d8;flex:none;display:grid;place-items:center;color:#b9ab93;font-size:12px;cursor:pointer;border:1px solid var(--line)}
+.st-name{font-family:"Gowun Batang",serif;font-size:24px;font-weight:700}
+.st-name small{font-family:Pretendard,sans-serif;font-size:14px;color:var(--accent);margin-right:6px;font-weight:600}
+.st-meta{color:var(--ink2);font-size:13.5px}
+.sec-t{font-size:13px;font-weight:700;color:var(--ink2);letter-spacing:.04em;margin:20px 0 8px;display:flex;align-items:center;gap:8px}
+.sec-t:after{content:"";flex:1;height:1px;background:var(--line)}
+.notes .field{margin-bottom:10px}
+.notes textarea.input{min-height:44px}
+.up-form{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px}
+.up-form .r{display:flex;gap:8px;margin-top:8px;align-items:center}
+.up-form input[type=date]{border:1px solid var(--line);border-radius:8px;padding:6px 8px;background:#fff}
+.timeline{list-style:none;margin:12px 0 0;padding:0 0 0 14px;border-left:2px solid var(--line)}
+.timeline li{position:relative;padding:4px 0 14px 10px}
+.timeline li:before{content:"";position:absolute;left:-21px;top:10px;width:10px;height:10px;border-radius:50%;background:var(--accent);border:2px solid var(--paper)}
+.timeline .d{font-size:12.5px;color:var(--accent);font-weight:600;font-variant-numeric:tabular-nums}
+.timeline .t{white-space:pre-wrap}
+.timeline .x{border:0;background:none;color:#b9ab93;font-size:12px;margin-left:6px}
+.timeline .x:hover{color:var(--danger)}
+
+.match-list{display:flex;flex-direction:column;gap:6px;max-height:50vh;overflow:auto}
+.match-row{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--line);border-radius:9px;padding:6px 10px}
+.match-row img{width:36px;height:45px;border-radius:5px;object-fit:cover}
+.match-row .fn{flex:1;font-size:13px;color:var(--ink2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.match-row select{border:1px solid var(--line);border-radius:7px;padding:5px;background:#fff;max-width:150px}
+.match-row.no{border-color:#ecc9c6;background:#fff7f6}
+
+.set-sec{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.set-sec h4{margin:0 0 10px;font-size:15px}
+.chk{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}
+
+.sres{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid var(--line);background:transparent;padding:10px 4px}
+.sres:hover{background:rgba(0,0,0,.03)}
+.sres .m{font-size:13px;color:var(--ink2)}
+
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%) translateY(20px);background:var(--ink);color:#fff;padding:9px 16px;border-radius:999px;font-size:14px;opacity:0;transition:.2s;z-index:80;pointer-events:none}
+.toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.bad{background:var(--danger)}
+.busy{position:fixed;inset:0;z-index:90;background:rgba(245,240,230,.6);display:grid;place-items:center}
+.spin{width:34px;height:34px;border-radius:50%;border:3px solid var(--line);border-top-color:var(--accent);animation:sp .8s linear infinite}
+.busy p{margin:12px 0 0;color:var(--ink2);font-size:14px;text-align:center}
+@keyframes sp{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="modal"></div>
+<div id="toast" class="toast"></div>
+<div id="busy" class="busy hidden"><div><div class="spin" style="margin:auto"></div><p id="busyMsg"></p></div></div>
+
+<script>
+/* ════════════════════════════════════════════════════════════
+   ★ 설치할 때 여기 한 줄만 바꾸세요 ★
+   구글 클라우드 콘솔에서 만든 'OAuth 클라이언트 ID'를 따옴표 안에 붙여 넣습니다.
+   (예: '123456789-abcde.apps.googleusercontent.com')
+   ════════════════════════════════════════════════════════════ */
+const CLIENT_ID = '여기에_클라이언트_ID를_붙여_넣으세요';
+
+/* ═════════ 아이콘 ═════════ */
+const I = {
+  back:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M15 18l-6-6 6-6"/></svg>',
+  search:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>',
+  gear:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 00.3 1.8l.1.1a2 2 0 11-2.8 2.8l-.1-.1a1.7 1.7 0 00-1.8-.3 1.7 1.7 0 00-1 1.5V21a2 2 0 11-4 0v-.1a1.7 1.7 0 00-1.1-1.5 1.7 1.7 0 00-1.8.3l-.1.1a2 2 0 11-2.8-2.8l.1-.1a1.7 1.7 0 00.3-1.8 1.7 1.7 0 00-1.5-1H3a2 2 0 110-4h.1a1.7 1.7 0 001.5-1.1 1.7 1.7 0 00-.3-1.8l-.1-.1a2 2 0 112.8-2.8l.1.1a1.7 1.7 0 001.8.3H9a1.7 1.7 0 001-1.5V3a2 2 0 114 0v.1a1.7 1.7 0 001 1.5 1.7 1.7 0 001.8-.3l.1-.1a2 2 0 112.8 2.8l-.1.1a1.7 1.7 0 00-.3 1.8V9a1.7 1.7 0 001.5 1H21a2 2 0 110 4h-.1a1.7 1.7 0 00-1.5 1z"/></svg>',
+  lock:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 018 0v4"/></svg>',
+  edit:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 013 3L7 19l-4 1 1-4z"/></svg>',
+  close:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>',
+  trash:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4h8v2M6 6l1 15h10l1-15"/></svg>'
+};
+
+/* ═════════ 상태 ═════════ */
+const S = { unlocked:false, classes:[], fields:[], year:'all', cur:null, photos:{}, tab:'roster', notesOpen:true };
+const THIS_YEAR = new Date().getFullYear();
+const IDLE_MIN = 10;
+let lastAct = Date.now();
+try { S.notesOpen = localStorage.getItem('jeja_notesOpen') !== '0'; } catch(e) {}
+
+/* ═════════ 유틸 ═════════ */
+const $ = s => document.querySelector(s);
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function today(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function toast(msg, bad){ const t=$('#toast'); t.textContent=msg; t.className='toast on'+(bad?' bad':''); clearTimeout(t._h); t._h=setTimeout(()=>t.className='toast',2200); }
+function busy(on, msg){ $('#busy').classList.toggle('hidden', !on); $('#busyMsg').textContent = msg || ''; }
+function errMsg(e){ return String((e && e.message) || e).replace(/^Error:\s*/, ''); }
+
+function ageInfo(year, grade){
+  const g = Number(grade), y = Number(year);
+  if (!g || !y) return '';
+  const birth = y - g - 6;
+  const age = THIS_YEAR - birth;
+  return `${birth}년생 · 올해 만 ${age-1}~${age}세`;
+}
+function classTitle(c){ return `${c.year} · ${c.name || '이름 없는 반'}`; }
+
+/* ═════════ 구글 연결 (로그인 토큰) ═════════ */
+const SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const SHEETS = 'https://sheets.googleapis.com/v4/spreadsheets';
+const DRIVE = 'https://www.googleapis.com/drive/v3/files';
+const UPLOAD = 'https://www.googleapis.com/upload/drive/v3/files';
+const TAB = { CLASS: '학급', STU: '학생', UPD: '근황', SET: '설정' };
+const CLASS_H = ['학급ID', '연도', '학교', '학년', '반이름', '등록일'];
+const STU_FIXED = ['학생ID', '학급ID', '연도', '반이름', '번호', '이름', '사진ID'];
+const DEFAULT_NOTES = ['별명', '특징', '기초학력', '추억', '가정상황'];
+const UPD_H = ['근황ID', '학생ID', '이름', '날짜', '내용'];
+
+const G = { client: null, token: null, exp: 0, email: '', waiting: null, _ok: null, _bad: null };
+function lsGet(k){ try { return localStorage.getItem(k); } catch(e){ return null; } }
+function lsSet(k, v){ try { v == null ? localStorage.removeItem(k) : localStorage.setItem(k, v); } catch(e){} }
+
+function initGoogle(){
+  return new Promise((res, rej) => {
+    let n = 0;
+    const t = setInterval(() => {
+      if (window.google && google.accounts && google.accounts.oauth2) {
+        clearInterval(t);
+        G.client = google.accounts.oauth2.initTokenClient({
+          client_id: CLIENT_ID, scope: SCOPE,
+          callback: r => G._ok && G._ok(r),
+          error_callback: e => G._bad && G._bad(e)
+        });
+        res();
+      } else if (++n > 150) { clearInterval(t); rej(new Error('구글 로그인 모듈을 불러오지 못했어요. 인터넷 연결을 확인해 주세요.')); }
+    }, 100);
+  });
+}
+
+function requestToken(prompt){
+  return new Promise((res, rej) => {
+    G._ok = r => {
+      if (r.error) return rej(new Error('구글 로그인에 실패했어요 (' + r.error + ')'));
+      if (!google.accounts.oauth2.hasGrantedAllScopes(r, SCOPE)) return rej(new Error('"드라이브 파일" 권한에 체크해야 수첩을 쓸 수 있어요. 다시 시도해 주세요.'));
+      G.token = r.access_token;
+      G.exp = Date.now() + (Number(r.expires_in || 3600) - 120) * 1000;
+      res();
+    };
+    G._bad = e => rej(new Error(
+      e && e.type === 'popup_closed' ? '로그인 창이 닫혔어요.' :
+      e && e.type === 'popup_failed_to_open' ? '팝업이 차단됐어요. 주소창 오른쪽에서 팝업을 허용해 주세요.' : '구글 로그인에 실패했어요.'));
+    const opt = { prompt: prompt == null ? '' : prompt };
+    const hint = lsGet('jeja_hint'); if (hint) opt.login_hint = hint;
+    G.client.requestAccessToken(opt);
+  });
+}
+
+/* 1시간마다 끝나는 구글 연결을 다시 잇는 창 (팝업은 클릭으로만 열 수 있어서 버튼을 둠) */
+function reconnect(){
+  if (G.waiting) return G.waiting;
+  G.waiting = new Promise(res => {
+    const wasBusy = !$('#busy').classList.contains('hidden');
+    busy(false);
+    const el = document.createElement('div');
+    el.className = 'modal-bg'; el.style.zIndex = 95;
+    el.innerHTML = `<div class="modal" style="max-width:380px"><div class="m-body" style="text-align:center;padding:24px">
+      <div class="serif" style="font-size:19px;margin-bottom:6px">구글 연결 이어 가기</div>
+      <p class="hint">보안을 위해 구글 연결은 1시간마다 새로 해야 해요.</p>
+      <button class="btn primary" id="rcGo" style="width:100%;margin-top:8px">다시 연결</button>
+      <p class="err" id="rcErr"></p></div></div>`;
+    document.body.appendChild(el);
+    el.querySelector('#rcGo').onclick = async () => {
+      try { await requestToken(''); el.remove(); G.waiting = null; if (wasBusy) busy(true, '이어서 저장하는 중…'); res(); }
+      catch(e){ el.querySelector('#rcErr').textContent = errMsg(e); }
+    };
+  });
+  return G.waiting;
+}
+
+async function gfetch(url, opt, retry){
+  opt = opt || {};
+  if (!G.token || Date.now() > G.exp) await reconnect();
+  const o = Object.assign({}, opt, { headers: Object.assign({ Authorization: 'Bearer ' + G.token }, opt.headers || {}) });
+  let r;
+  try { r = await fetch(url, o); }
+  catch(e){ throw new Error('인터넷 연결을 확인해 주세요.'); }
+  if (r.status === 401 && retry !== false) { G.token = null; await reconnect(); return gfetch(url, opt, false); }
+  if (!r.ok) {
+    let m = ''; try { const j = await r.json(); m = j.error && j.error.message; } catch(e){}
+    throw new Error(`구글 저장소 요청이 실패했어요 (${r.status}) ${m || ''}`);
+  }
+  return r;
+}
+async function gjson(url, method, body){
+  const r = await gfetch(url, { method: method || 'GET', headers: body ? { 'Content-Type': 'application/json' } : {}, body: body ? JSON.stringify(body) : undefined });
+  const t = await r.text();
+  return t ? JSON.parse(t) : {};
+}
+
+/* ═════════ 시트 다루기 ═════════ */
+const D = { ss: null, sheetIds: {}, cols: {}, T: {}, set: {}, setRows: [], loadedAt: 0 };
+const enc = s => encodeURIComponent(s);
+const rng = (tab, a1) => enc(`'${tab}'` + (a1 ? '!' + a1 : ''));
+function colL(n){ let s = ''; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; }
+
+function parseTable(values){
+  const headers = (values[0] || []).map(h => String(h).trim()), rows = [];
+  for (let i = 1; i < values.length; i++) {
+    const v = values[i]; if (!v || !v[0]) continue;
+    const o = { _row: i + 1 };
+    headers.forEach((h, j) => { if (h) o[h] = v[j] == null ? '' : String(v[j]); });
+    rows.push(o);
+  }
+  return { headers, rows };
+}
+async function reload(){
+  const tabs = [TAB.CLASS, TAB.STU, TAB.UPD, TAB.SET];
+  const r = await gjson(`${SHEETS}/${D.ss}/values:batchGet?${tabs.map(t => 'ranges=' + rng(t)).join('&')}&valueRenderOption=FORMATTED_VALUE`);
+  r.valueRanges.forEach((vr, i) => {
+    const t = tabs[i], v = vr.values || [];
+    if (t === TAB.SET) { D.setRows = v; D.set = {}; v.slice(1).forEach(x => { if (x[0]) D.set[x[0]] = x[1] || ''; }); }
+    else D.T[t] = parseTable(v);
+  });
+  D.loadedAt = Date.now();
+}
+async function loadMeta(){
+  const r = await gjson(`${SHEETS}/${D.ss}?fields=${enc('sheets.properties')}`);
+  r.sheets.forEach(s => { D.sheetIds[s.properties.title] = s.properties.sheetId; D.cols[s.properties.title] = s.properties.gridProperties.columnCount; });
+  for (const t of [TAB.CLASS, TAB.STU, TAB.UPD, TAB.SET]) if (D.sheetIds[t] == null) throw new Error(`시트에서 '${t}' 탭을 찾을 수 없어요. 탭 이름을 바꾸지 않았는지 확인해 주세요.`);
+}
+const putRange = (tab, a1, values) => gjson(`${SHEETS}/${D.ss}/values/${rng(tab, a1)}?valueInputOption=RAW`, 'PUT', { values });
+const setCell = (tab, row, col, v) => putRange(tab, colL(col) + row, [[v]]);
+const valuesBatch = data => data.length ? gjson(`${SHEETS}/${D.ss}/values:batchUpdate`, 'POST', { valueInputOption: 'RAW', data }) : null;
+const batchUpdate = requests => requests.length ? gjson(`${SHEETS}/${D.ss}:batchUpdate`, 'POST', { requests }) : null;
+async function appendRows(tab, rows){
+  if (!rows.length) return;
+  await gjson(`${SHEETS}/${D.ss}/values/${rng(tab, 'A1')}:append?valueInputOption=RAW&insertDataOption=INSERT_ROWS`, 'POST', { values: rows });
+}
+function delReqs(tab, rowNums){
+  return [...new Set(rowNums)].sort((a, b) => b - a).map(r => ({ deleteDimension: { range: { sheetId: D.sheetIds[tab], dimension: 'ROWS', startIndex: r - 1, endIndex: r } } }));
+}
+async function ensureCols(tab, n){
+  if ((D.cols[tab] || 26) >= n) return;
+  const add = n - D.cols[tab] + 5;
+  await batchUpdate([{ appendDimension: { sheetId: D.sheetIds[tab], dimension: 'COLUMNS', length: add } }]);
+  D.cols[tab] += add;
+}
+async function setSettings(obj){
+  const rows = D.setRows || [], data = [], add = [];
+  Object.keys(obj).forEach(k => {
+    const i = rows.findIndex((x, j) => j > 0 && x[0] === k);
+    if (i > 0) data.push({ range: `'${TAB.SET}'!B${i + 1}`, values: [[obj[k]]] }); else add.push([k, obj[k]]);
+  });
+  await valuesBatch(data);
+  await appendRows(TAB.SET, add);
+  await reload();
+}
+
+/* ═════════ 드라이브 다루기 ═════════ */
+async function driveFind(tag){
+  const qs = `appProperties has { key='jeja' and value='${tag}' } and trashed=false`;
+  const r = await gjson(`${DRIVE}?q=${enc(qs)}&fields=${enc('files(id,name,createdTime)')}&orderBy=createdTime&spaces=drive`);
+  return r.files || [];
+}
+const mkFolder = (name, parent, tag) => gjson(`${DRIVE}?fields=id`, 'POST', { name, mimeType: 'application/vnd.google-apps.folder', parents: parent ? [parent] : undefined, appProperties: { jeja: tag } });
+async function uploadFile(meta, blob){
+  const b = 'jeja' + Math.random().toString(36).slice(2);
+  const body = new Blob([`--${b}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${b}\r\nContent-Type: ${blob.type || 'application/octet-stream'}\r\n\r\n`, blob, `\r\n--${b}--`]);
+  const r = await gfetch(`${UPLOAD}?uploadType=multipart&fields=id,name,webViewLink`, { method: 'POST', headers: { 'Content-Type': 'multipart/related; boundary=' + b }, body });
+  return r.json();
+}
+async function trashFile(id){ if (!id) return; try { await gjson(`${DRIVE}/${id}?fields=id`, 'PATCH', { trashed: true }); } catch(e){} }
+async function readPhoto(id){ try { const r = await gfetch(`${DRIVE}/${id}?alt=media`); return b64(await r.arrayBuffer()); } catch(e){ return ''; } }
+async function pool(items, n, fn){
+  const out = []; let i = 0;
+  await Promise.all(Array.from({ length: Math.min(n, items.length) }, async () => { while (i < items.length) { const k = i++; out[k] = await fn(items[k], k); } }));
+  return out;
+}
+async function folderFor(key, name, tag){
+  const id = D.set[key];
+  if (id) { try { const f = await gjson(`${DRIVE}/${id}?fields=id,trashed`); if (!f.trashed) return id; } catch(e){} }
+  const nf = await mkFolder(name, D.set.rootFolder || null, tag);
+  await setSettings({ [key]: nf.id });
+  return nf.id;
+}
+
+/* 처음 한 번: 내 드라이브에 '제자수첩' 폴더와 시트 만들기 */
+async function createNotebook(){
+  const root = await mkFolder('제자수첩', null, 'root');
+  const photos = await mkFolder('사진', root.id, 'photos');
+  const backups = await mkFolder('백업', root.id, 'backups');
+  const head = arr => [{ startRow: 0, startColumn: 0, rowData: [{ values: arr.map(h => ({ userEnteredValue: { stringValue: h },
+    userEnteredFormat: { textFormat: { bold: true }, backgroundColor: { red: .93, green: .9, blue: .84 } } })) }] }];
+  const sheet = (id, title, h, hidden) => ({ properties: { sheetId: id, title, hidden: !!hidden, gridProperties: { frozenRowCount: 1 } }, data: head(h) });
+  const ss = await gjson(`${SHEETS}?fields=spreadsheetId`, 'POST', {
+    properties: { title: '제자수첩', locale: 'ko_KR', timeZone: 'Asia/Seoul' },
+    sheets: [sheet(0, TAB.CLASS, CLASS_H), sheet(1, TAB.STU, STU_FIXED.concat(DEFAULT_NOTES)), sheet(2, TAB.UPD, UPD_H), sheet(3, TAB.SET, ['항목', '값'], true)]
+  });
+  D.ss = ss.spreadsheetId;
+  const f = await gjson(`${DRIVE}/${D.ss}?fields=parents`);
+  await gjson(`${DRIVE}/${D.ss}?addParents=${root.id}&removeParents=${(f.parents || []).join(',')}&fields=id`, 'PATCH', { appProperties: { jeja: 'sheet' } });
+  await loadMeta();
+  await batchUpdate([
+    { addDimensionGroup: { range: { sheetId: 1, dimension: 'COLUMNS', startIndex: 7, endIndex: 12 } } },
+    { updateDimensionProperties: { range: { sheetId: 1, dimension: 'COLUMNS', startIndex: 7, endIndex: 12 }, properties: { pixelSize: 160 }, fields: 'pixelSize' } },
+    { updateDimensionProperties: { range: { sheetId: 2, dimension: 'COLUMNS', startIndex: 4, endIndex: 5 }, properties: { pixelSize: 420 }, fields: 'pixelSize' } }
+  ]);
+  await appendRows(TAB.SET, [['rootFolder', root.id], ['photoFolder', photos.id], ['backupFolder', backups.id], ['version', '1']]);
+  await reload();
+}
+async function findNotebook(){
+  const f = await driveFind('sheet');
+  if (!f.length) return false;
+  D.ss = f[0].id;
+  await loadMeta(); await reload();
+  return true;
+}
+async function loadAccount(){
+  try {
+    const r = await gjson(`https://www.googleapis.com/drive/v3/about?fields=${enc('user(displayName,emailAddress)')}`);
+    G.email = (r.user && r.user.emailAddress) || '';
+    if (G.email) lsSet('jeja_hint', G.email);
+  } catch(e){}
+}
+async function sha256hex(s){ return hex(await crypto.subtle.digest('SHA-256', te.encode(s))); }
+async function checkPw(pw){
+  if (!D.set.pwSalt) throw new Error('비밀번호가 설정되어 있지 않아요.');
+  const h = await sha256hex(D.set.pwSalt + ':' + await pwHash(pw, D.set.pwSalt));
+  if (h !== D.set.pwHash) throw new Error('비밀번호가 맞지 않습니다.');
+}
+async function setPw(pw){
+  const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
+  await setSettings({ pwSalt: salt, pwHash: await sha256hex(salt + ':' + await pwHash(pw, salt)) });
+}
+
+/* ═════════ 기록 다루기 ═════════ */
+const Tb = n => D.T[n];
+const newId = p => p + hex(crypto.getRandomValues(new Uint8Array(5)));
+const clean = (s, max) => String(s == null ? '' : s).slice(0, max || 5000);
+const rowArr = (headers, o) => headers.map(h => o[h] == null ? '' : String(o[h]));
+const noteFields = h => h.slice(STU_FIXED.length).filter(Boolean);
+const findRow = (tab, key, id) => Tb(tab).rows.find(r => r[key] === id);
+function studentOut(r, F){
+  const notes = {}; F.forEach(f => notes[f] = r[f] || '');
+  return { id: r['학생ID'], classId: r['학급ID'], no: r['번호'], name: r['이름'], photoId: r['사진ID'], notes };
+}
+async function freshRow(tab, key, id){
+  let r = findRow(tab, key, id);
+  if (r) { const v = await gjson(`${SHEETS}/${D.ss}/values/${rng(tab, 'A' + r._row)}`); if ((v.values || [[]])[0][0] === id) return r; }
+  await reload(); r = findRow(tab, key, id);
+  if (!r) throw new Error('기록을 찾을 수 없어요. 새로고침해 주세요.');
+  return r;
+}
+
+const ACT = {
+  async listClasses(){
+    await reload();
+    const counts = {};
+    Tb(TAB.STU).rows.forEach(r => counts[r['학급ID']] = (counts[r['학급ID']] || 0) + 1);
+    return {
+      classes: Tb(TAB.CLASS).rows.map(r => ({ id: r['학급ID'], year: r['연도'], school: r['학교'], grade: r['학년'], name: r['반이름'], created: r['등록일'], count: counts[r['학급ID']] || 0 })),
+      fields: noteFields(Tb(TAB.STU).headers)
+    };
+  },
+  async saveClass(a){
+    const year = clean(a.year, 4);
+    if (!/^\d{4}$/.test(year)) throw new Error('연도를 확인하세요.');
+    await reload();
+    const t = Tb(TAB.CLASS);
+    const o = { '학급ID': a.id || newId('C'), '연도': year, '학교': clean(a.school, 100), '학년': clean(a.grade, 10), '반이름': clean(a.name, 100), '등록일': today() };
+    if (a.id) {
+      const row = findRow(TAB.CLASS, '학급ID', a.id);
+      if (!row) throw new Error('학급을 찾을 수 없습니다.');
+      o['등록일'] = row['등록일'];
+      const s = Tb(TAB.STU), cy = colL(s.headers.indexOf('연도') + 1), cn = colL(s.headers.indexOf('반이름') + 1);
+      const data = [{ range: `'${TAB.CLASS}'!A${row._row}`, values: [rowArr(t.headers, o)] }];
+      s.rows.filter(r => r['학급ID'] === a.id).forEach(r => {
+        data.push({ range: `'${TAB.STU}'!${cy}${r._row}`, values: [[year]] }, { range: `'${TAB.STU}'!${cn}${r._row}`, values: [[o['반이름']]] });
+      });
+      await valuesBatch(data);
+    } else await appendRows(TAB.CLASS, [rowArr(t.headers, o)]);
+    await reload();
+    return { id: o['학급ID'] };
+  },
+  async deleteClass(a){
+    await reload();
+    const stu = Tb(TAB.STU).rows.filter(r => r['학급ID'] === a.id), ids = new Set(stu.map(r => r['학생ID']));
+    await pool(stu.filter(r => r['사진ID']), 4, r => trashFile(r['사진ID']));
+    await batchUpdate([
+      ...delReqs(TAB.UPD, Tb(TAB.UPD).rows.filter(r => ids.has(r['학생ID'])).map(r => r._row)),
+      ...delReqs(TAB.STU, stu.map(r => r._row)),
+      ...delReqs(TAB.CLASS, Tb(TAB.CLASS).rows.filter(r => r['학급ID'] === a.id).map(r => r._row))
+    ]);
+    await reload();
+    return { ok: true };
+  },
+  async getClass(a){
+    await reload();
+    const c = findRow(TAB.CLASS, '학급ID', a.id);
+    if (!c) throw new Error('학급을 찾을 수 없습니다.');
+    const F = noteFields(Tb(TAB.STU).headers);
+    const students = Tb(TAB.STU).rows.filter(r => r['학급ID'] === a.id).map(r => studentOut(r, F));
+    const by = {}; students.forEach(s => by[s.id] = s);
+    Tb(TAB.UPD).rows.forEach(r => { const s = by[r['학생ID']]; if (s && (!s.latest || r['날짜'] >= s.latest.date)) s.latest = { date: r['날짜'], text: r['내용'] }; });
+    students.sort((x, y) => (Number(x.no) || 999) - (Number(y.no) || 999));
+    return { cls: { id: c['학급ID'], year: c['연도'], school: c['학교'], grade: c['학년'], name: c['반이름'] }, students, fields: F };
+  },
+  async addStudents(a){
+    await reload();
+    const c = findRow(TAB.CLASS, '학급ID', a.classId);
+    if (!c) throw new Error('학급을 찾을 수 없습니다.');
+    const h = Tb(TAB.STU).headers;
+    const rows = (a.list || []).filter(x => String(x.name || '').trim()).map(x => rowArr(h, {
+      '학생ID': newId('S'), '학급ID': a.classId, '연도': c['연도'], '반이름': c['반이름'], '번호': clean(x.no, 5), '이름': clean(x.name, 50).trim() }));
+    await appendRows(TAB.STU, rows);
+    await reload();
+    return { added: rows.length };
+  },
+  async updateStudent(a){
+    const h = Tb(TAB.STU).headers;
+    if (!['번호', '이름'].concat(noteFields(h)).includes(a.field)) throw new Error('수정할 수 없는 항목입니다.');
+    const row = await freshRow(TAB.STU, '학생ID', a.id), v = clean(a.value, 5000);
+    const data = [{ range: `'${TAB.STU}'!${colL(Tb(TAB.STU).headers.indexOf(a.field) + 1)}${row._row}`, values: [[v]] }];
+    if (a.field === '이름') {
+      const cn = colL(Tb(TAB.UPD).headers.indexOf('이름') + 1);
+      Tb(TAB.UPD).rows.filter(r => r['학생ID'] === a.id).forEach(r => data.push({ range: `'${TAB.UPD}'!${cn}${r._row}`, values: [[v]] }));
+    }
+    await valuesBatch(data);
+    row[a.field] = v;
+    return { ok: true };
+  },
+  async deleteStudent(a){
+    await reload();
+    const row = findRow(TAB.STU, '학생ID', a.id);
+    if (!row) return { ok: true };
+    await trashFile(row['사진ID']);
+    await batchUpdate([...delReqs(TAB.UPD, Tb(TAB.UPD).rows.filter(r => r['학생ID'] === a.id).map(r => r._row)), ...delReqs(TAB.STU, [row._row])]);
+    await reload();
+    return { ok: true };
+  },
+  async addField(a){
+    const name = clean(a.name, 30).trim();
+    if (!name) throw new Error('항목 이름을 입력하세요.');
+    await reload();
+    const h = Tb(TAB.STU).headers;
+    if (h.includes(name)) throw new Error('이미 있는 항목입니다.');
+    const col = h.length + 1;
+    await ensureCols(TAB.STU, col);
+    await setCell(TAB.STU, 1, col, name);
+    await batchUpdate([{ repeatCell: { range: { sheetId: D.sheetIds[TAB.STU], startRowIndex: 0, endRowIndex: 1, startColumnIndex: col - 1, endColumnIndex: col },
+      cell: { userEnteredFormat: { textFormat: { bold: true }, backgroundColor: { red: .93, green: .9, blue: .84 } } }, fields: 'userEnteredFormat.textFormat.bold,userEnteredFormat.backgroundColor' } }]);
+    await reload();
+    return { fields: noteFields(Tb(TAB.STU).headers) };
+  },
+  async getStudent(a){
+    const F = noteFields(Tb(TAB.STU).headers), row = findRow(TAB.STU, '학생ID', a.id);
+    if (!row) throw new Error('학생을 찾을 수 없습니다.');
+    const st = studentOut(row, F);
+    st.updates = Tb(TAB.UPD).rows.filter(r => r['학생ID'] === a.id).map(r => ({ id: r['근황ID'], date: r['날짜'], text: r['내용'], _row: r._row }))
+      .sort((x, y) => x.date < y.date ? 1 : x.date > y.date ? -1 : y._row - x._row);
+    return st;
+  },
+  async addUpdate(a){
+    const text = clean(a.text, 5000).trim();
+    if (!text) throw new Error('근황 내용을 입력하세요.');
+    const date = /^\d{4}-\d{2}-\d{2}$/.test(a.date || '') ? a.date : today();
+    const st = findRow(TAB.STU, '학생ID', a.studentId);
+    if (!st) throw new Error('학생을 찾을 수 없습니다.');
+    await appendRows(TAB.UPD, [rowArr(Tb(TAB.UPD).headers, { '근황ID': newId('U'), '학생ID': a.studentId, '이름': st['이름'], '날짜': date, '내용': text })]);
+    await reload();
+    return { ok: true };
+  },
+  async deleteUpdate(a){
+    await reload();
+    await batchUpdate(delReqs(TAB.UPD, Tb(TAB.UPD).rows.filter(r => r['근황ID'] === a.id).map(r => r._row)));
+    await reload();
+    return { ok: true };
+  },
+  async getPhotos(a){
+    const list = Tb(TAB.STU).rows.filter(r => r['학급ID'] === a.classId && r['사진ID'] && !S.photos[r['학생ID']]);
+    const out = {};
+    await pool(list, 6, async r => { const b = await readPhoto(r['사진ID']); if (b) out[r['학생ID']] = b; });
+    return out;
+  },
+  async savePhotos(a){
+    const folder = await folderFor('photoFolder', '사진', 'photos');
+    await reload();
+    const h = Tb(TAB.STU).headers, col = colL(h.indexOf('사진ID') + 1), data = [], old = [];
+    await pool(a.items || [], 3, async it => {
+      const r = findRow(TAB.STU, '학생ID', it.studentId); if (!r || !it.data) return;
+      const f = await uploadFile({ name: it.studentId + '.jpg', parents: [folder], mimeType: 'image/jpeg' }, new Blob([unb64(it.data)], { type: 'image/jpeg' }));
+      if (r['사진ID']) old.push(r['사진ID']);
+      data.push({ range: `'${TAB.STU}'!${col}${r._row}`, values: [[f.id]] });
+    });
+    await valuesBatch(data);
+    await pool(old, 4, trashFile);
+    await reload();
+    return { saved: data.length };
+  },
+  async search(a){
+    const q = String(a.q || '').trim();
+    if (!q) return [];
+    if (Date.now() - D.loadedAt > 60000) await reload();
+    const cls = {}; Tb(TAB.CLASS).rows.forEach(r => cls[r['학급ID']] = r);
+    return Tb(TAB.STU).rows.filter(r => (r['이름'] || '').includes(q) || (r['별명'] || '').includes(q)).slice(0, 50).map(r => {
+      const c = cls[r['학급ID']] || {};
+      return { id: r['학생ID'], classId: r['학급ID'], name: r['이름'], no: r['번호'], nick: r['별명'] || '', year: c['연도'], className: c['반이름'], school: c['학교'] };
+    });
+  },
+  async exportAll(a){
+    await reload();
+    const strip = rows => rows.map(r => { const o = Object.assign({}, r); delete o._row; return o; });
+    const d = { app: '제자수첩', format: 'jejasucheop-data', version: 1, exportedAt: new Date().toISOString(),
+      fields: noteFields(Tb(TAB.STU).headers), classes: strip(Tb(TAB.CLASS).rows), students: strip(Tb(TAB.STU).rows), updates: strip(Tb(TAB.UPD).rows), photos: {} };
+    if (a.photos) await pool(Tb(TAB.STU).rows.filter(r => r['사진ID']), 6, async r => {
+      const b = S.photos[r['학생ID']] || await readPhoto(r['사진ID']); if (b) d.photos[r['학생ID']] = b; });
+    return d;
+  },
+  async importAll(a){
+    const d = a.data;
+    if (!d || d.format !== 'jejasucheop-data') throw new Error('제자수첩 백업 파일이 아닙니다.');
+    const stuH = STU_FIXED.concat((d.fields || DEFAULT_NOTES).map(f => clean(f, 30)));
+    await reload();
+    const oldPhotos = Tb(TAB.STU).rows.map(r => r['사진ID']).filter(Boolean);
+    const folder = await folderFor('photoFolder', '사진', 'photos');
+    const students = (d.students || []).map(r => Object.assign({}, r, { '사진ID': '' }));
+    await pool(students.filter(r => d.photos && d.photos[r['학생ID']]), 3, async r => {
+      const f = await uploadFile({ name: r['학생ID'] + '.jpg', parents: [folder], mimeType: 'image/jpeg' }, new Blob([unb64(d.photos[r['학생ID']])], { type: 'image/jpeg' }));
+      r['사진ID'] = f.id;
+    });
+    await ensureCols(TAB.STU, stuH.length);
+    for (const [tab, h, rows] of [[TAB.CLASS, CLASS_H, d.classes || []], [TAB.STU, stuH, students], [TAB.UPD, UPD_H, d.updates || []]]) {
+      await gjson(`${SHEETS}/${D.ss}/values/${rng(tab)}:clear`, 'POST', {});
+      await putRange(tab, 'A1', [h].concat(rows.map(r => rowArr(h, r))));
+    }
+    await pool(oldPhotos, 4, trashFile);
+    await reload();
+    return { classes: (d.classes || []).length, students: students.length, updates: (d.updates || []).length };
+  },
+  async saveBackupToDrive(a){
+    const folder = await folderFor('backupFolder', '백업', 'backups');
+    const f = await uploadFile({ name: a.name, parents: [folder], mimeType: 'application/json' }, new Blob([a.content], { type: 'application/json' }));
+    return { name: f.name, url: f.webViewLink };
+  }
+};
+
+async function api(action, args){ return ACT[action](args || {}); }
+
+/* ═════════ 암호 도구 (브라우저 WebCrypto) ═════════ */
+const te = new TextEncoder(), td = new TextDecoder();
+const hex = b => Array.from(new Uint8Array(b)).map(x => x.toString(16).padStart(2,'0')).join('');
+const unhex = h => new Uint8Array(h.match(/../g).map(x => parseInt(x,16)));
+function b64(buf){ const b=new Uint8Array(buf); let s=''; for(let i=0;i<b.length;i+=0x8000) s+=String.fromCharCode.apply(null,b.subarray(i,i+0x8000)); return btoa(s); }
+function unb64(s){ const bin=atob(s); const b=new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) b[i]=bin.charCodeAt(i); return b; }
+async function pwHash(pw, saltHex){
+  const k = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveBits']);
+  const bits = await crypto.subtle.deriveBits({name:'PBKDF2', salt:unhex(saltHex), iterations:150000, hash:'SHA-256'}, k, 256);
+  return hex(bits);
+}
+async function aesKey(pw, salt, iter){
+  const k = await crypto.subtle.importKey('raw', te.encode(pw), 'PBKDF2', false, ['deriveKey']);
+  return crypto.subtle.deriveKey({name:'PBKDF2', salt, iterations:iter, hash:'SHA-256'}, k, {name:'AES-GCM', length:256}, false, ['encrypt','decrypt']);
+}
+async function encryptBackup(obj, pw){
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12)), iter = 200000;
+  const key = await aesKey(pw, salt, iter);
+  const ct = await crypto.subtle.encrypt({name:'AES-GCM', iv}, key, te.encode(JSON.stringify(obj)));
+  return { app:'제자수첩', format:'jejasucheop-backup', version:1, encrypted:true, createdAt:obj.exportedAt,
+    kdf:{name:'PBKDF2', hash:'SHA-256', iterations:iter, salt:b64(salt)}, cipher:'AES-GCM', iv:b64(iv), data:b64(ct) };
+}
+async function decryptBackup(f, pw){
+  const key = await aesKey(pw, unb64(f.kdf.salt), f.kdf.iterations);
+  try { const pt = await crypto.subtle.decrypt({name:'AES-GCM', iv:unb64(f.iv)}, key, unb64(f.data)); return JSON.parse(td.decode(pt)); }
+  catch(e){ throw new Error('비밀번호가 맞지 않거나 파일이 손상되었습니다.'); }
+}
+
+/* ═════════ 시작 · 로그인 · 잠금 ═════════ */
+function lockShell(inner){ return `<div class="lock"><div class="lock-card"><div class="lock-mark"></div><h1>제자수첩</h1>${inner}</div></div>`; }
+
+async function boot(){
+  if (!CLIENT_ID || CLIENT_ID.indexOf('apps.googleusercontent.com') < 0) {
+    $('#app').innerHTML = lockShell(`<p class="sub">설치가 아직 끝나지 않았어요.<br>index.html 맨 위의 <b>CLIENT_ID</b>에 구글 클라우드에서 받은 클라이언트 ID를 넣어 주세요.</p>`);
+    return;
+  }
+  try { await initGoogle(); renderWelcome(); }
+  catch(e){ $('#app').innerHTML = lockShell(`<p class="sub">${esc(errMsg(e))}</p>`); }
+}
+
+function renderWelcome(msg){
+  closeModal();
+  $('#app').innerHTML = lockShell(`
+    <p class="sub">가르친 아이들을 오래 기억하는 수첩</p>
+    <button class="btn primary" id="gIn">구글 계정으로 시작하기</button>
+    <p class="err" id="gErr">${esc(msg || '')}</p>
+    <div class="hint" style="margin-top:14px;text-align:left;line-height:1.7">
+      · 기록은 <b>내 구글 드라이브의 '제자수첩' 폴더</b>에만 저장돼요.<br>
+      · 이 앱은 자기가 만든 파일만 열 수 있고, 드라이브의 다른 파일은 볼 수 없어요.<br>
+      · 앱을 만든 사람도 내 기록을 볼 수 없어요.
+    </div>`);
+  $('#gIn').onclick = async () => {
+    $('#gErr').textContent = '';
+    try { await requestToken(lsGet('jeja_hint') ? '' : 'select_account'); }
+    catch(e){ return $('#gErr').textContent = errMsg(e); }
+    busy(true, '내 드라이브에서 수첩을 찾는 중…');
+    try {
+      await loadAccount();
+      const found = await findNotebook();
+      busy(false);
+      renderPassword(found ? (D.set.pwHash ? 'unlock' : 'reset') : 'create');
+    } catch(e){ busy(false); $('#gErr').textContent = errMsg(e); }
+  };
+}
+
+function switchAccount(){
+  try { if (G.token) google.accounts.oauth2.revoke(G.token, () => {}); } catch(e){}
+  Object.assign(G, { token: null, exp: 0, email: '' });
+  Object.assign(D, { ss: null, T: {}, set: {}, setRows: [] });
+  Object.assign(S, { classes: [], cur: null, photos: {} });
+  lsSet('jeja_hint', null);
+  renderWelcome();
+}
+
+function renderPassword(mode){
+  closeModal();
+  const setup = mode !== 'unlock';
+  const sub = mode === 'create' ? '처음 오셨네요. 내 드라이브에 수첩을 만들고, 수첩을 잠글 비밀번호를 정해 주세요.'
+            : mode === 'reset' ? '수첩 비밀번호가 비어 있어요. 새 비밀번호를 정해 주세요. (기록은 그대로예요)'
+            : '비밀번호를 입력해 수첩을 여세요.';
+  $('#app').innerHTML = lockShell(`
+    <p class="sub">${sub}</p>
+    <form id="lockForm" autocomplete="off">
+      <input class="input" type="password" id="pw1" placeholder="${setup ? '새 비밀번호 (6자 이상)' : '비밀번호'}">
+      ${setup ? '<input class="input" type="password" id="pw2" placeholder="비밀번호 한 번 더">' : ''}
+      <button class="btn primary" type="submit">${mode === 'create' ? '수첩 만들고 시작하기' : setup ? '비밀번호 정하기' : '열기'}</button>
+      <p class="err" id="lockErr"></p>
+    </form>
+    <p class="hint" style="margin-top:6px">${G.email ? esc(G.email) + ' · ' : ''}<a href="#" id="swAcc">다른 계정으로</a>${mode === 'unlock' ? ' · <a href="#" id="forgot">비밀번호를 잊었어요</a>' : ''}</p>
+    ${setup ? '<p class="hint">이 비밀번호는 앱을 열 때와 백업 파일을 잠글 때 쓰여요.</p>' : ''}`);
+  $('#pw1').focus();
+  $('#swAcc').onclick = e => { e.preventDefault(); switchAccount(); };
+  if ($('#forgot')) $('#forgot').onclick = e => {
+    e.preventDefault();
+    openModal('비밀번호를 잊었을 때', `
+      <p style="margin-top:0">기록은 지우지 않고 비밀번호만 새로 정할 수 있어요.</p>
+      <ol style="padding-left:20px;line-height:1.8">
+        <li><a href="https://docs.google.com/spreadsheets/d/${esc(D.ss)}/edit" target="_blank" rel="noopener">내 '제자수첩' 시트</a>를 엽니다.</li>
+        <li>메뉴 [보기] → [숨겨진 시트] → <b>설정</b> 탭을 보이게 합니다.</li>
+        <li><b>pwSalt</b>, <b>pwHash</b> 두 줄의 '값' 칸을 지웁니다.</li>
+        <li>이 앱을 새로고침하면 새 비밀번호를 정하는 화면이 나와요.</li>
+      </ol>
+      <p class="hint">시트는 내 구글 계정으로만 열 수 있어서, 다른 사람은 이 방법을 쓸 수 없어요. 예전 비밀번호로 만든 백업 파일은 예전 비밀번호로 열립니다.</p>`, '');
+  };
+  $('#lockForm').onsubmit = async ev => {
+    ev.preventDefault();
+    const pw = $('#pw1').value, er = $('#lockErr');
+    er.textContent = '';
+    const until = Number(lsGet('jeja_lockUntil') || 0);
+    if (Date.now() < until) return er.textContent = `비밀번호를 여러 번 틀려 잠겼어요. ${Math.ceil((until - Date.now()) / 60000)}분 뒤에 다시 해 주세요.`;
+    if (setup) {
+      if (pw.length < 6) return er.textContent = '6자 이상으로 정해 주세요.';
+      if (pw !== $('#pw2').value) return er.textContent = '두 비밀번호가 다릅니다.';
+    }
+    busy(true, mode === 'create' ? '내 드라이브에 수첩을 만드는 중…' : '여는 중…');
+    try {
+      if (mode === 'create') await createNotebook();
+      if (setup) await setPw(pw);
+      else {
+        try { await checkPw(pw); lsSet('jeja_fail', null); }
+        catch(e){
+          const n = Number(lsGet('jeja_fail') || 0) + 1;
+          if (n >= 5) { lsSet('jeja_fail', null); lsSet('jeja_lockUntil', String(Date.now() + 10 * 60000)); throw new Error('비밀번호를 5번 틀려 10분 동안 잠깁니다.'); }
+          lsSet('jeja_fail', String(n)); throw new Error(`비밀번호가 맞지 않습니다. (${n}/5)`);
+        }
+      }
+      S.unlocked = true; lastAct = Date.now();
+      await loadHome();
+    } catch(e){ er.textContent = errMsg(e); }
+    busy(false);
+  };
+}
+
+function lockApp(expired){
+  S.unlocked = false;
+  Object.assign(S, { classes: [], cur: null, photos: {} });
+  D.T = {};
+  if (G.token && D.ss) renderPassword('unlock'); else renderWelcome();
+  if (expired) toast('오래 사용하지 않아 잠겼습니다.');
+}
+['click', 'keydown', 'touchstart'].forEach(ev => document.addEventListener(ev, () => lastAct = Date.now(), true));
+setInterval(() => { if (S.unlocked && Date.now() - lastAct > IDLE_MIN * 60000) lockApp(true); }, 30000);
+
+/* ═════════ 홈: 연도별 학급 ═════════ */
+async function loadHome(){
+  const r = await api('listClasses');
+  S.classes = r.classes; S.fields = r.fields; S.cur = null;
+  renderHome();
+}
+
+function topBar(title, back){
+  return `<div class="top"><div class="top-in">
+    ${back ? `<button class="icon-btn" id="bBack" title="뒤로">${I.back}</button>` : ''}
+    <h1>${title}</h1>
+    <button class="icon-btn" id="bSearch" title="이름으로 찾기">${I.search}</button>
+    <button class="icon-btn" id="bSet" title="설정·백업">${I.gear}</button>
+    <button class="icon-btn" id="bLock" title="잠그기">${I.lock}</button>
+  </div></div>`;
+}
+function bindTop(){
+  $('#bSearch').onclick = openSearch;
+  $('#bSet').onclick = openSettings;
+  $('#bLock').onclick = () => lockApp(false);
+  if ($('#bBack')) $('#bBack').onclick = () => { S.photos = {}; loadHome().catch(e => toast(errMsg(e), true)); };
+}
+
+function renderHome(){
+  const years = {};
+  S.classes.forEach(c => years[c.year] = (years[c.year] || 0) + 1);
+  const ys = Object.keys(years).sort((a,b) => b - a);
+  if (S.year !== 'all' && !years[S.year]) S.year = 'all';
+  const show = S.year === 'all' ? ys : [S.year];
+  const body = !S.classes.length
+    ? `<div class="empty"><div class="serif">아직 기록한 학급이 없어요</div>졸업시킨 학급을 하나씩 만들어 보세요. 지난 해도 연도를 골라 소급해서 기록할 수 있어요.<br><br><button class="btn primary" id="bFirst">첫 학급 만들기</button></div>`
+    : show.map(y => {
+        const cs = S.classes.filter(c => String(c.year) === String(y)).sort((a,b) => String(a.name).localeCompare(b.name));
+        const n = cs.reduce((s,c) => s + c.count, 0);
+        return `<div class="yr-head"><h2>${y}</h2><span>${cs.length}개 학급 · ${n}명</span></div>
+        <div class="grid">${cs.map(c => `
+          <button class="ccard" data-id="${esc(c.id)}">
+            <div class="nm">${esc(c.name || '이름 없는 반')}</div>
+            <div class="mt">${esc(c.school || '')}${c.grade ? ' · ' + esc(c.grade) + '학년' : ''} · ${c.count}명</div>
+            ${ageInfo(c.year, c.grade) ? `<div class="age">${ageInfo(c.year, c.grade)}</div>` : ''}
+          </button>`).join('')}</div>`;
+      }).join('');
+
+  $('#app').innerHTML = topBar('제자수첩') + `<div class="wrap">
+    ${S.classes.length ? `<div class="years">
+      <button class="chip ${S.year==='all'?'on':''}" data-y="all"><b>전체</b><small>${S.classes.length}</small></button>
+      ${ys.map(y => `<button class="chip ${String(S.year)===y?'on':''}" data-y="${y}"><b>${y}</b><small>${years[y]}</small></button>`).join('')}
+    </div>` : ''}
+    ${body}
+  </div>
+  <button class="fab" id="bNew">+ 학급 만들기</button>`;
+  bindTop();
+  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { S.year = b.dataset.y; renderHome(); });
+  document.querySelectorAll('.ccard').forEach(b => b.onclick = () => openClass(b.dataset.id));
+  $('#bNew').onclick = () => classForm();
+  if ($('#bFirst')) $('#bFirst').onclick = () => classForm();
+}
+
+/* ═════════ 학급 설정 (만들기/수정) ═════════ */
+function classForm(c){
+  const isNew = !c;
+  c = c || { year: S.year !== 'all' ? S.year : THIS_YEAR, school: '', grade: '', name: '' };
+  const schools = [...new Set(S.classes.map(x => x.school).filter(Boolean))];
+  const years = []; for (let y = THIS_YEAR + 1; y >= 1970; y--) years.push(y);
+  openModal(isNew ? '학급 만들기' : '학급 설정', `
+    <label class="field"><span>연도</span>
+      <select class="input" id="fYear">${years.map(y => `<option ${String(y)===String(c.year)?'selected':''}>${y}</option>`).join('')}</select>
+    </label>
+    <label class="field"><span>학교</span>
+      <input class="input" id="fSchool" list="schoolList" value="${esc(c.school)}" placeholder="예: 산울초등학교">
+      <datalist id="schoolList">${schools.map(s => `<option value="${esc(s)}">`).join('')}</datalist>
+    </label>
+    <div class="row2">
+      <label class="field"><span>학년 (나이 계산에 쓰여요)</span>
+        <select class="input" id="fGrade"><option value="">선택 안 함</option>${[1,2,3,4,5,6].map(g => `<option value="${g}" ${String(g)===String(c.grade)?'selected':''}>${g}학년</option>`).join('')}</select>
+      </label>
+      <label class="field"><span>반 이름</span>
+        <input class="input" id="fName" value="${esc(c.name)}" placeholder="예: 별무리 4기">
+      </label>
+    </div>
+    <p class="err" id="fErr"></p>`,
+    `${!isNew ? '<button class="btn danger" id="fDel" style="margin-right:auto">학급 삭제</button>' : ''}
+     <button class="btn ghost" data-close>취소</button><button class="btn primary" id="fSave">${isNew ? '만들기' : '저장'}</button>`);
+  $('#fName').focus();
+  $('#fSave').onclick = async () => {
+    const data = { id: c.id, year: $('#fYear').value, school: $('#fSchool').value.trim(), grade: $('#fGrade').value, name: $('#fName').value.trim() };
+    if (!data.name) return $('#fErr').textContent = '반 이름을 적어 주세요.';
+    busy(true, '저장하는 중…');
+    try {
+      const r = await api('saveClass', data);
+      closeModal();
+      if (isNew) { await loadHome(); await openClass(r.id); }
+      else await openClass(c.id, true);
+      toast('저장했어요');
+    } catch(e){ $('#fErr').textContent = errMsg(e); }
+    busy(false);
+  };
+  if ($('#fDel')) $('#fDel').onclick = async () => {
+    if (!confirm(`'${c.name}' 학급과 학생 ${S.cur.students.length}명의 기록·근황·사진을 모두 지울까요?\n되돌릴 수 없습니다. (먼저 백업을 권장합니다)`)) return;
+    busy(true, '삭제하는 중…');
+    try { await api('deleteClass', { id: c.id }); closeModal(); S.photos = {}; await loadHome(); toast('삭제했어요'); }
+    catch(e){ toast(errMsg(e), true); }
+    busy(false);
+  };
+}
+
+/* ═════════ 학급 화면 ═════════ */
+async function openClass(id, keepTab){
+  busy(true, '명부를 여는 중…');
+  try {
+    const r = await api('getClass', { id });
+    if (!keepTab) { S.tab = 'roster'; S.photos = {}; }
+    S.cur = r; S.fields = r.fields;
+    renderClass();
+    loadPhotos();
+  } catch(e){ toast(errMsg(e), true); }
+  busy(false);
+}
+
+async function loadPhotos(){
+  if (!S.cur) return;
+  const id = S.cur.cls.id;
+  const need = S.cur.students.some(s => s.photoId && !S.photos[s.id]);
+  if (!need) return;
+  try {
+    const p = await api('getPhotos', { classId: id });
+    if (!S.cur || S.cur.cls.id !== id) return;
+    Object.assign(S.photos, p);
+    renderBody();
+  } catch(e){}
+}
+
+function photoSrc(st){ return S.photos[st.id] ? 'data:image/jpeg;base64,' + S.photos[st.id] : ''; }
+
+function renderClass(){
+  const c = S.cur.cls, n = S.cur.students.length, age = ageInfo(c.year, c.grade);
+  $('#app').innerHTML = topBar(esc(classTitle(c)), true) + `<div class="wrap">
+    <div class="cls-head">
+      <div class="meta">${esc(c.school || '학교 미입력')}${c.grade ? ' · ' + esc(c.grade) + '학년' : ''} · ${n}명
+        <button class="btn ghost sm" id="bEditCls">${I.edit.replace('<svg','<svg style="width:14px;height:14px;vertical-align:-2px"')} 학급 설정</button></div>
+      ${age ? `<div class="age">${age} — 지금쯤 이렇게 자랐겠네요</div>` : ''}
+    </div>
+    <div class="tabs">
+      <button class="tab ${S.tab==='roster'?'on':''}" data-t="roster">학생 명부</button>
+      <button class="tab ${S.tab==='photo'?'on':''}" data-t="photo">사진 명부</button>
+    </div>
+    <div id="body"></div>
+  </div>`;
+  bindTop();
+  $('#bEditCls').onclick = () => classForm(S.cur.cls);
+  document.querySelectorAll('.tab').forEach(b => b.onclick = () => { S.tab = b.dataset.t; renderClass(); });
+  renderBody();
+}
+
+function renderBody(){
+  if (!$('#body')) return;
+  S.tab === 'roster' ? renderRoster() : renderPhotoTab();
+}
+
+/* ── 학생 명부 ── */
+function renderRoster(){
+  const st = S.cur.students, F = S.fields, open = S.notesOpen;
+  const thumb = s => photoSrc(s) ? `<img class="thumb" src="${photoSrc(s)}">` : `<div class="thumb empty">${s.photoId ? '…' : ''}</div>`;
+  $('#body').innerHTML = `
+  <div class="toolbar">
+    <button class="btn sm primary" id="bAddSt">+ 학생</button>
+    <button class="btn sm" id="bPaste">명단 한꺼번에 넣기</button>
+    <span class="sp"></span>
+    <button class="btn sm" id="bFold">${open ? '비고 접기 ◂' : '비고 펼치기 ▸'}</button>
+    ${open ? '<button class="btn sm" id="bAddField">+ 비고 항목</button>' : ''}
+  </div>
+  ${!st.length ? `<div class="empty"><div class="serif">학생 명단을 넣어 주세요</div>엑셀이나 나이스에서 이름을 복사해 '명단 한꺼번에 넣기'에 붙여 넣으면 번호가 차례로 매겨져요.</div>` : `
+  <div class="tbl-wrap"><table class="roster">
+    <thead><tr>
+      <th class="c-no">번호</th><th class="c-ph"></th><th class="c-nm">이름</th>
+      <th class="c-up">최근 근황</th>
+      ${open ? F.map(f => `<th class="c-note">${esc(f)}</th>`).join('') : '<th class="c-fold">비고</th>'}
+      <th class="c-go"></th>
+    </tr></thead>
+    <tbody>${st.map(s => `<tr data-id="${esc(s.id)}">
+      <td class="c-no"><input class="cell no" data-f="번호" value="${esc(s.no)}" inputmode="numeric"></td>
+      <td class="c-ph">${thumb(s)}</td>
+      <td class="c-nm"><input class="cell" data-f="이름" value="${esc(s.name)}"></td>
+      <td class="c-up"><button class="up-btn" data-open>${s.latest ? `<span class="d">${esc(s.latest.date)}</span><span class="t">${esc(s.latest.text)}</span>` : '<span class="none">+ 근황 적기</span>'}</button></td>
+      ${open ? F.map(f => `<td class="c-note"><textarea class="cell" data-f="${esc(f)}" rows="1">${esc(s.notes[f] || '')}</textarea></td>`).join('')
+             : `<td class="c-fold"><span class="note-dot">${F.filter(f => s.notes[f]).length || ''}</span></td>`}
+      <td class="c-go"><button class="go" data-open title="자세히">›</button></td>
+    </tr>`).join('')}</tbody>
+  </table></div>`}`;
+
+  $('#bAddSt').onclick = addOneStudent;
+  $('#bPaste').onclick = pasteRoster;
+  $('#bFold').onclick = () => { S.notesOpen = !S.notesOpen; try { localStorage.setItem('jeja_notesOpen', S.notesOpen ? '1' : '0'); } catch(e) {} renderRoster(); };
+  if ($('#bAddField')) $('#bAddField').onclick = addField;
+  document.querySelectorAll('.roster .cell').forEach(el => {
+    el.dataset.v = el.value;
+    el.onchange = () => saveCell(el);
+    el.onkeydown = e => { if (e.key === 'Enter' && el.tagName === 'INPUT') el.blur(); };
+  });
+  document.querySelectorAll('[data-open]').forEach(b => b.onclick = () => openStudent(b.closest('tr').dataset.id));
+}
+
+async function saveCell(el){
+  const id = el.closest('[data-id]').dataset.id, field = el.dataset.f, value = el.value.trim();
+  if (value === el.dataset.v) return;
+  if (field === '이름' && !value) { el.value = el.dataset.v; return toast('이름은 비울 수 없어요', true); }
+  try {
+    await api('updateStudent', { id, field, value });
+    el.dataset.v = value;
+    const s = S.cur.students.find(x => x.id === id);
+    if (field === '번호') s.no = value; else if (field === '이름') s.name = value; else s.notes[field] = value;
+    toast('저장됨');
+  } catch(e){ toast(errMsg(e), true); el.value = el.dataset.v; }
+}
+
+function nextNo(){ return S.cur.students.reduce((m, s) => Math.max(m, Number(s.no) || 0), 0) + 1; }
+
+function addOneStudent(){
+  openModal('학생 추가', `
+    <div class="row2">
+      <label class="field"><span>번호</span><input class="input" id="aNo" value="${nextNo()}" inputmode="numeric"></label>
+      <label class="field"><span>이름</span><input class="input" id="aName"></label>
+    </div><p class="err" id="aErr"></p>`,
+    `<button class="btn ghost" data-close>취소</button><button class="btn primary" id="aSave">추가</button>`);
+  $('#aName').focus();
+  $('#aName').onkeydown = e => { if (e.key === 'Enter') $('#aSave').click(); };
+  $('#aSave').onclick = async () => {
+    const name = $('#aName').value.trim(); if (!name) return $('#aErr').textContent = '이름을 적어 주세요.';
+    busy(true);
+    try { await api('addStudents', { classId: S.cur.cls.id, list: [{ no: $('#aNo').value.trim(), name }] }); closeModal(); await openClass(S.cur.cls.id, true); }
+    catch(e){ $('#aErr').textContent = errMsg(e); }
+    busy(false);
+  };
+}
+
+function pasteRoster(){
+  openModal('명단 한꺼번에 넣기', `
+    <p class="hint" style="margin-top:0">한 줄에 한 명씩 적거나 붙여 넣으세요. "3 김민지"처럼 번호를 앞에 쓰면 그 번호로, 이름만 쓰면 ${nextNo()}번부터 차례로 들어가요.</p>
+    <textarea class="input" id="pText" style="min-height:220px" placeholder="1 김하늘&#10;2 이바다&#10;3 박들판"></textarea>
+    <p class="hint" id="pCount"></p><p class="err" id="pErr"></p>`,
+    `<button class="btn ghost" data-close>취소</button><button class="btn primary" id="pSave">넣기</button>`);
+  const parse = () => {
+    let n = nextNo();
+    return $('#pText').value.split(/\r?\n/).map(l => l.trim()).filter(Boolean).map(l => {
+      const m = l.match(/^(\d{1,3})\s*[.)번\t,]?\s+(.+)$/) || l.match(/^(\d{1,3})[.)번\t,](.+)$/);
+      if (m) { n = Number(m[1]) + 1; return { no: String(Number(m[1])), name: m[2].trim().split(/\t/)[0] }; }
+      return { no: String(n++), name: l.split(/\t/)[0] };
+    });
+  };
+  $('#pText').oninput = () => { const l = parse(); $('#pCount').textContent = l.length ? `${l.length}명 · ${l.slice(0,3).map(x => x.no + '번 ' + x.name).join(', ')}${l.length > 3 ? ' …' : ''}` : ''; };
+  $('#pText').focus();
+  $('#pSave').onclick = async () => {
+    const list = parse(); if (!list.length) return $('#pErr').textContent = '명단이 비어 있어요.';
+    busy(true, `${list.length}명 넣는 중…`);
+    try { await api('addStudents', { classId: S.cur.cls.id, list }); closeModal(); await openClass(S.cur.cls.id, true); toast(`${list.length}명을 넣었어요`); }
+    catch(e){ $('#pErr').textContent = errMsg(e); }
+    busy(false);
+  };
+}
+
+function addField(){
+  openModal('비고 항목 추가', `
+    <label class="field"><span>항목 이름</span><input class="input" id="nfName" placeholder="예: 진로 희망, 좋아하던 것"></label>
+    <p class="hint">모든 학급의 명부에 같은 칸이 생기고, 시트의 '학생' 탭에도 열이 추가돼요. 지금 항목: ${S.fields.map(esc).join(', ')}</p>
+    <p class="err" id="nfErr"></p>`,
+    `<button class="btn ghost" data-close>취소</button><button class="btn primary" id="nfSave">추가</button>`);
+  $('#nfName').focus();
+  $('#nfSave').onclick = async () => {
+    busy(true);
+    try { const r = await api('addField', { name: $('#nfName').value }); S.fields = r.fields; closeModal(); await openClass(S.cur.cls.id, true); }
+    catch(e){ $('#nfErr').textContent = errMsg(e); }
+    busy(false);
+  };
+}
+
+/* ── 사진 명부 ── */
+function renderPhotoTab(){
+  const st = S.cur.students;
+  $('#body').innerHTML = `
+    <div class="drop" id="drop">
+      <button class="btn primary" id="bBulk">사진 한꺼번에 올리기</button>
+      <div class="hint" style="margin-top:8px">파일 이름에 번호를 넣어 두면 명부에 자동으로 맞춰져요. 예: <b>01.jpg</b>, <b>3_김민지.png</b><br>여기로 파일을 끌어다 놓아도 됩니다. 사진은 작게 줄여서 드라이브에 저장돼요.</div>
+      <input type="file" id="bulkFile" accept="image/*" multiple class="hidden">
+    </div>
+    ${!st.length ? '<div class="empty">먼저 학생 명부에 이름을 넣어 주세요.</div>' : `
+    <div class="pgrid">${st.map(s => `
+      <div class="pcard" data-id="${esc(s.id)}">
+        ${photoSrc(s) ? `<img class="ph" src="${photoSrc(s)}" title="사진 바꾸기">` : `<div class="ph" title="사진 넣기">${s.photoId ? '불러오는 중' : '+ 사진'}</div>`}
+        <div class="lb"><b>${esc(s.no)}</b>${esc(s.name)}</div>
+      </div>`).join('')}</div>`}
+    <input type="file" id="oneFile" accept="image/*" class="hidden">`;
+  const bulk = $('#bulkFile');
+  $('#bBulk').onclick = () => bulk.click();
+  bulk.onchange = () => { if (bulk.files.length) matchPhotos([...bulk.files]); bulk.value = ''; };
+  const drop = $('#drop');
+  drop.ondragover = e => { e.preventDefault(); drop.classList.add('over'); };
+  drop.ondragleave = () => drop.classList.remove('over');
+  drop.ondrop = e => { e.preventDefault(); drop.classList.remove('over'); const f = [...e.dataTransfer.files].filter(x => x.type.startsWith('image/')); if (f.length) matchPhotos(f); };
+  let target = null;
+  const one = $('#oneFile');
+  document.querySelectorAll('.pcard .ph').forEach(el => el.onclick = () => { target = el.closest('.pcard').dataset.id; one.click(); });
+  document.querySelectorAll('.pcard .lb').forEach(el => el.onclick = () => openStudent(el.closest('.pcard').dataset.id));
+  one.onchange = async () => { const f = one.files[0]; one.value = ''; if (f && target) await uploadOne(target, f); };
+}
+
+function thumbOf(file){
+  return new Promise((res, rej) => {
+    const url = URL.createObjectURL(file), img = new Image();
+    img.onload = () => {
+      const W = 240, H = 300, c = document.createElement('canvas'); c.width = W; c.height = H;
+      const x = c.getContext('2d'), r = Math.max(W / img.width, H / img.height), w = img.width * r, h = img.height * r;
+      x.fillStyle = '#fff'; x.fillRect(0, 0, W, H);
+      x.drawImage(img, (W - w) / 2, (H - h) * 0.3, w, h);
+      URL.revokeObjectURL(url);
+      res(c.toDataURL('image/jpeg', 0.82).split(',')[1]);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error(file.name + ': 읽을 수 없는 사진 형식이에요 (HEIC는 JPG로 바꿔 주세요)')); };
+    img.src = url;
+  });
+}
+
+function guessNo(filename, nos){
+  const groups = (filename.replace(/\.[^.]+$/, '').match(/\d+/g) || []).map(Number).reverse();
+  return groups.find(n => nos.has(n));
+}
+
+async function matchPhotos(files){
+  const st = S.cur.students, nos = new Map(st.map(s => [Number(s.no), s.id]));
+  busy(true, `사진 ${files.length}장을 준비하는 중…`);
+  const items = [];
+  for (const f of files.sort((a,b) => a.name.localeCompare(b.name, 'ko', {numeric:true}))) {
+    try { const data = await thumbOf(f); const n = guessNo(f.name, new Set(nos.keys())); items.push({ name: f.name, data, sid: n != null ? nos.get(n) : '' }); }
+    catch(e){ toast(errMsg(e), true); }
+  }
+  busy(false);
+  if (!items.length) return;
+  const opts = sel => `<option value="">— 건너뛰기 —</option>` + st.map(s => `<option value="${esc(s.id)}" ${s.id === sel ? 'selected' : ''}>${esc(s.no)}번 ${esc(s.name)}</option>`).join('');
+  const ok = items.filter(i => i.sid).length;
+  openModal('사진 맞추기', `
+    <p class="hint" style="margin-top:0">${items.length}장 중 <b>${ok}장</b>이 번호로 자동 연결됐어요. 연결이 안 된 사진은 직접 골라 주세요.</p>
+    <div class="match-list">${items.map((it, i) => `
+      <div class="match-row ${it.sid ? '' : 'no'}"><img src="data:image/jpeg;base64,${it.data}"><span class="fn">${esc(it.name)}</span>
+      <select data-i="${i}">${opts(it.sid)}</select></div>`).join('')}</div>`,
+    `<button class="btn ghost" data-close>취소</button><button class="btn primary" id="mSave">저장</button>`, true);
+  document.querySelectorAll('.match-row select').forEach(s => s.onchange = () => { items[s.dataset.i].sid = s.value; s.closest('.match-row').classList.toggle('no', !s.value); });
+  $('#mSave').onclick = async () => {
+    const seen = new Set(), list = [];
+    items.forEach(it => { if (it.sid && !seen.has(it.sid)) { seen.add(it.sid); list.push({ studentId: it.sid, data: it.data }); } });
+    if (!list.length) return closeModal();
+    busy(true, `사진 ${list.length}장 저장 중…`);
+    try {
+      for (let i = 0; i < list.length; i += 8) {
+        busy(true, `사진 저장 중… ${Math.min(i + 8, list.length)}/${list.length}`);
+        await api('savePhotos', { items: list.slice(i, i + 8) });
+      }
+      list.forEach(x => S.photos[x.studentId] = x.data);
+      closeModal(); await openClass(S.cur.cls.id, true); toast(`사진 ${list.length}장을 저장했어요`);
+    } catch(e){ toast(errMsg(e), true); }
+    busy(false);
+  };
+}
+
+async function uploadOne(sid, file){
+  busy(true, '사진 저장 중…');
+  try {
+    const data = await thumbOf(file);
+    await api('savePhotos', { items: [{ studentId: sid, data }] });
+    S.photos[sid] = data;
+    const s = S.cur.students.find(x => x.id === sid); if (s) s.photoId = s.photoId || 'new';
+    renderBody(); if ($('#stPh')) openStudent(sid); toast('사진을 바꿨어요');
+  } catch(e){ toast(errMsg(e), true); }
+  busy(false);
+}
+
+/* ═════════ 학생 상세 (비고 + 근황) ═════════ */
+async function openStudent(id){
+  busy(true);
+  let s;
+  try { s = await api('getStudent', { id }); } catch(e){ busy(false); return toast(errMsg(e), true); }
+  busy(false);
+  const c = S.cur ? S.cur.cls : null, src = S.photos[id] ? 'data:image/jpeg;base64,' + S.photos[id] : '';
+  openModal('학생 기록', `
+    <div class="st-top">
+      ${src ? `<img class="st-ph" id="stPh" src="${src}" title="사진 바꾸기">` : `<div class="st-ph" id="stPh">+ 사진</div>`}
+      <div>
+        <div class="st-name"><small>${esc(s.no)}번</small>${esc(s.name)}</div>
+        ${c ? `<div class="st-meta">${esc(classTitle(c))}${c.school ? ' · ' + esc(c.school) : ''}</div>
+        ${ageInfo(c.year, c.grade) ? `<div class="st-meta" style="color:var(--green)">${ageInfo(c.year, c.grade)}</div>` : ''}` : ''}
+      </div>
+      <input type="file" id="stFile" accept="image/*" class="hidden">
+    </div>
+
+    <div class="sec-t">근황</div>
+    <div class="up-form">
+      <textarea class="input" id="uText" placeholder="연락이 왔나요? 지금 무엇을 하며 지내는지 적어 두세요." style="min-height:64px"></textarea>
+      <div class="r"><input type="date" id="uDate" value="${today()}"><span class="sp" style="flex:1"></span><button class="btn primary sm" id="uSave">기록하기</button></div>
+    </div>
+    ${s.updates.length ? `<ul class="timeline">${s.updates.map(u => `<li><span class="d">${esc(u.date)}</span><button class="x" data-u="${esc(u.id)}">삭제</button><div class="t">${esc(u.text)}</div></li>`).join('')}</ul>` : '<p class="hint" style="margin:10px 2px">아직 기록된 근황이 없어요.</p>'}
+
+    <div class="sec-t">비고 (그해의 기억)</div>
+    <div class="notes">${S.fields.map(f => `<label class="field"><span>${esc(f)}</span><textarea class="input" data-f="${esc(f)}">${esc(s.notes[f] || '')}</textarea></label>`).join('')}</div>
+    <div style="text-align:right;margin-top:18px"><button class="btn danger sm" id="stDel">이 학생 삭제</button></div>`, '');
+
+  const fileIn = $('#stFile');
+  $('#stPh').onclick = () => fileIn.click();
+  fileIn.onchange = async () => { const f = fileIn.files[0]; fileIn.value = ''; if (f) await uploadOne(id, f); };
+
+  document.querySelectorAll('.notes textarea').forEach(t => {
+    t.dataset.v = t.value;
+    t.onchange = async () => {
+      const v = t.value.trim(); if (v === t.dataset.v) return;
+      try { await api('updateStudent', { id, field: t.dataset.f, value: v }); t.dataset.v = v; patchLocal(id, x => x.notes[t.dataset.f] = v); toast('저장됨'); }
+      catch(e){ toast(errMsg(e), true); }
+    };
+  });
+  $('#uSave').onclick = async () => {
+    const text = $('#uText').value.trim(); if (!text) return $('#uText').focus();
+    busy(true);
+    try { await api('addUpdate', { studentId: id, date: $('#uDate').value || today(), text }); refreshLatest(id); busy(false); openStudent(id); toast('근황을 기록했어요'); }
+    catch(e){ busy(false); toast(errMsg(e), true); }
+  };
+  document.querySelectorAll('.timeline .x').forEach(b => b.onclick = async () => {
+    if (!confirm('이 근황을 지울까요?')) return;
+    try { await api('deleteUpdate', { id: b.dataset.u }); refreshLatest(id); openStudent(id); } catch(e){ toast(errMsg(e), true); }
+  });
+  $('#stDel').onclick = async () => {
+    if (!confirm(`${s.name} 학생의 기록·근황·사진을 모두 지울까요? 되돌릴 수 없습니다.`)) return;
+    busy(true);
+    try { await api('deleteStudent', { id }); closeModal(); if (S.cur) await openClass(S.cur.cls.id, true); toast('삭제했어요'); }
+    catch(e){ toast(errMsg(e), true); }
+    busy(false);
+  };
+}
+
+function patchLocal(id, fn){ if (!S.cur) return; const s = S.cur.students.find(x => x.id === id); if (s) { fn(s); } }
+function refreshLatest(id){
+  if (!S.cur) return;
+  api('getStudent', { id }).then(s => { patchLocal(id, x => x.latest = s.updates[0] ? { date: s.updates[0].date, text: s.updates[0].text } : null); if (!$('.modal')) renderBody(); }).catch(()=>{});
+}
+
+/* ═════════ 이름으로 찾기 ═════════ */
+function openSearch(){
+  openModal('이름으로 찾기', `<input class="input" id="sq" placeholder="이름이나 별명">
+    <div id="sr" style="margin-top:10px"></div>`, '');
+  let h;
+  $('#sq').focus();
+  $('#sq').oninput = () => {
+    clearTimeout(h);
+    const q = $('#sq').value.trim();
+    if (!q) return $('#sr').innerHTML = '';
+    h = setTimeout(async () => {
+      try {
+        const r = await api('search', { q });
+        $('#sr').innerHTML = r.length ? r.map(x => `<button class="sres" data-c="${esc(x.classId)}" data-s="${esc(x.id)}">
+          <b>${esc(x.name)}</b>${x.nick ? ` <span class="m">(${esc(x.nick)})</span>` : ''}
+          <div class="m">${esc(x.year)} · ${esc(x.className)} · ${esc(x.no)}번${x.school ? ' · ' + esc(x.school) : ''}</div></button>`).join('')
+          : '<p class="hint">찾는 이름이 없어요.</p>';
+        document.querySelectorAll('.sres').forEach(b => b.onclick = async () => { closeModal(); await openClass(b.dataset.c); openStudent(b.dataset.s); });
+      } catch(e){ toast(errMsg(e), true); }
+    }, 300);
+  };
+}
+
+/* ═════════ 설정 · 백업 ═════════ */
+function openSettings(){
+  openModal('설정 · 백업', `
+    <div class="set-sec">
+      <h4>연결된 구글 계정</h4>
+      <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <span style="flex:1">${esc(G.email || '구글 계정')}</span>
+        <a class="btn sm" href="https://docs.google.com/spreadsheets/d/${esc(D.ss)}/edit" target="_blank" rel="noopener">시트로 보기</a>
+        <button class="btn sm" id="swAcc2">다른 계정으로</button>
+      </div>
+      <p class="hint">기록은 이 계정의 구글 드라이브 '제자수첩' 폴더에 저장됩니다.</p>
+    </div>
+    <div class="set-sec">
+      <h4>백업 파일 만들기 (JSON)</h4>
+      <label class="chk"><input type="checkbox" id="bkPhoto" checked> 사진도 함께 담기 (파일이 커져요)</label>
+      <label class="chk"><input type="checkbox" id="bkEnc" checked> 비밀번호로 암호화 (권장)</label>
+      <input class="input" type="password" id="bkPw" placeholder="수첩 비밀번호 확인" style="margin:8px 0">
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="btn primary sm" id="bkDown">내 컴퓨터로 내려받기</button>
+        <button class="btn sm" id="bkDrive">구글 드라이브에 저장</button>
+      </div>
+      <p class="hint">암호화한 백업은 이 비밀번호가 있어야만 열 수 있어요. 드라이브 저장 위치: '제자수첩' 폴더 안 '백업' 폴더</p>
+      <p class="err" id="bkErr"></p>
+    </div>
+    <div class="set-sec">
+      <h4>백업에서 되살리기</h4>
+      <input type="file" id="rsFile" accept=".json,application/json" class="input" style="padding:7px">
+      <input class="input" type="password" id="rsPw" placeholder="백업 파일 비밀번호 (암호화된 경우)" style="margin:8px 0">
+      <button class="btn danger sm" id="rsGo">되살리기</button>
+      <p class="hint">지금 수첩의 기록이 백업 파일 내용으로 모두 바뀝니다.</p>
+      <p class="err" id="rsErr"></p>
+    </div>
+    <div class="set-sec">
+      <h4>비밀번호 바꾸기</h4>
+      <input class="input" type="password" id="cp0" placeholder="지금 비밀번호" style="margin-bottom:8px">
+      <input class="input" type="password" id="cp1" placeholder="새 비밀번호 (6자 이상)" style="margin-bottom:8px">
+      <input class="input" type="password" id="cp2" placeholder="새 비밀번호 한 번 더" style="margin-bottom:8px">
+      <button class="btn sm" id="cpGo">바꾸기</button>
+      <p class="err" id="cpErr"></p>
+    </div>
+    <p class="hint">${IDLE_MIN}분 동안 아무것도 하지 않으면 자동으로 잠깁니다. 비밀번호를 5번 틀리면 10분 동안 열 수 없어요.</p>`, '');
+
+  $('#swAcc2').onclick = () => { if (confirm('지금 계정에서 나가고 다른 구글 계정으로 들어갈까요?')) switchAccount(); };
+  const build = async () => {
+    const pw = $('#bkPw').value, enc = $('#bkEnc').checked;
+    if (!pw) throw new Error('수첩 비밀번호를 입력해 주세요.');
+    await checkPw(pw);
+    busy(true, $('#bkPhoto').checked ? '사진까지 모으는 중… (조금 걸려요)' : '기록을 모으는 중…');
+    const data = await api('exportAll', { photos: $('#bkPhoto').checked });
+    const out = enc ? await encryptBackup(data, pw) : data;
+    const stamp = today().replace(/-/g, '');
+    return { name: `제자수첩_백업_${stamp}${enc ? '' : '_암호화안함'}.json`, text: JSON.stringify(out, null, enc ? 0 : 1), count: data.students.length };
+  };
+  $('#bkDown').onclick = async () => {
+    $('#bkErr').textContent = '';
+    if (!$('#bkEnc').checked && !confirm('암호화하지 않은 백업에는 학생 개인정보가 그대로 담깁니다. 계속할까요?')) return;
+    try {
+      const b = await build();
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([b.text], { type: 'application/json' }));
+      a.download = b.name; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+      toast(`학생 ${b.count}명 기록을 백업했어요`);
+    } catch(e){ $('#bkErr').textContent = errMsg(e) + ' — 내려받기가 막히면 [구글 드라이브에 저장]을 써 주세요.'; }
+    busy(false);
+  };
+  $('#bkDrive').onclick = async () => {
+    $('#bkErr').textContent = '';
+    try {
+      const b = await build();
+      busy(true, '드라이브에 저장 중…');
+      const r = await api('saveBackupToDrive', { name: b.name, content: b.text });
+      toast(`드라이브 '제자수첩/백업'에 저장했어요`);
+    } catch(e){ $('#bkErr').textContent = errMsg(e); }
+    busy(false);
+  };
+  $('#rsGo').onclick = async () => {
+    $('#rsErr').textContent = '';
+    const f = $('#rsFile').files[0]; if (!f) return $('#rsErr').textContent = '백업 파일을 골라 주세요.';
+    try {
+      busy(true, '파일을 여는 중…');
+      let d = JSON.parse(await f.text());
+      if (d.format === 'jejasucheop-backup') {
+        if (!$('#rsPw').value) throw new Error('이 백업은 암호화되어 있어요. 비밀번호를 입력해 주세요.');
+        d = await decryptBackup(d, $('#rsPw').value);
+      }
+      if (d.format !== 'jejasucheop-data') throw new Error('제자수첩 백업 파일이 아니에요.');
+      busy(false);
+      if (!confirm(`백업(${d.exportedAt || ''})의 학급 ${d.classes.length}개, 학생 ${d.students.length}명으로 지금 기록을 모두 바꿀까요?`)) return;
+      busy(true, '되살리는 중… (사진이 많으면 몇 분 걸려요)');
+      const r = await api('importAll', { data: d });
+      closeModal(); S.photos = {}; await loadHome();
+      toast(`학급 ${r.classes}개 · 학생 ${r.students}명을 되살렸어요`);
+    } catch(e){ $('#rsErr').textContent = errMsg(e); }
+    busy(false);
+  };
+  $('#cpGo').onclick = async () => {
+    const e = $('#cpErr'); e.textContent = '';
+    const p0 = $('#cp0').value, p1 = $('#cp1').value;
+    if (p1.length < 6) return e.textContent = '새 비밀번호는 6자 이상이어야 해요.';
+    if (p1 !== $('#cp2').value) return e.textContent = '새 비밀번호가 서로 달라요.';
+    busy(true, '바꾸는 중…');
+    try {
+      try { await checkPw(p0); } catch(x){ throw new Error('지금 비밀번호가 맞지 않아요.'); }
+      await setPw(p1); ['cp0','cp1','cp2'].forEach(i => $('#' + i).value = '');
+      toast('비밀번호를 바꿨어요. 예전 백업은 예전 비밀번호로 열려요.');
+    } catch(er){ e.textContent = errMsg(er); }
+    busy(false);
+  };
+}
+
+/* ═════════ 모달 ═════════ */
+function openModal(title, body, foot, wide){
+  $('#modal').innerHTML = `<div class="modal-bg"><div class="modal ${wide ? 'wide' : ''}">
+    <div class="m-head"><h3>${title}</h3><button class="icon-btn" data-close>${I.close}</button></div>
+    <div class="m-body">${body}</div>${foot ? `<div class="m-foot">${foot}</div>` : ''}
+  </div></div>`;
+  const bg = $('#modal .modal-bg');
+  bg.addEventListener('mousedown', e => { if (e.target === bg) closeModal(); });
+  $('#modal').querySelectorAll('[data-close]').forEach(b => b.onclick = closeModal);
+}
+function closeModal(){
+  const had = !!$('#modal .modal-bg');
+  // 모달 안 입력 중이던 칸은 change 이벤트로 이미 저장됨
+  $('#modal').innerHTML = '';
+  if (had && S.cur && $('#body')) renderBody();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape' && $('#modal .modal-bg')) closeModal(); });
+
+boot();
+</script>
+</body>
+</html>
